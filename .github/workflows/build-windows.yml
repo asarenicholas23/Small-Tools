@@ -47,7 +47,7 @@ jobs:
           Write-Host "Prepared Windows Ghostscript sidecar at $sidecar"
 
       - name: Build Windows installer
-        run: npm run tauri build
+        run: npm run tauri build -- --bundles nsis
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
@@ -55,4 +55,3 @@ jobs:
           name: pdf-shrinker-windows
           path: |
             src-tauri/target/release/bundle/nsis/*.exe
-            src-tauri/target/release/bundle/msi/*.msi

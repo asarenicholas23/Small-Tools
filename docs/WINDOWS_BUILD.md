@@ -25,14 +25,13 @@ Then run:
 
 ```powershell
 npm ci --legacy-peer-deps
-npm run tauri build
+npm run tauri build -- --bundles nsis
 ```
 
 The installer output will be under:
 
 ```text
 src-tauri/target/release/bundle/nsis/
-src-tauri/target/release/bundle/msi/
 ```
 
 ## Licensing
