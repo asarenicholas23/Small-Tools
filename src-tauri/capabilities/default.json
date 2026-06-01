@@ -1,0 +1,35 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default desktop capability for PDF Shrinker",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "pdf-shrinker-ghostscript",
+          "sidecar": true,
+          "args": [
+            "-sDEVICE=pdfwrite",
+            "-dCompatibilityLevel=1.4",
+            {
+              "validator": "^-dPDFSETTINGS=/(screen|ebook|printer|prepress)$"
+            },
+            "-dNOPAUSE",
+            "-dQUIET",
+            "-dBATCH",
+            {
+              "validator": "^-sOutputFile=.+\\.[Pp][Dd][Ff]$"
+            },
+            {
+              "validator": "^.+\\.[Pp][Dd][Ff]$"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

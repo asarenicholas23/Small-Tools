@@ -1,0 +1,7 @@
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/binaries/ghostscript-*
+src-tauri/binaries/pdf-shrinker-ghostscript-*
+!src-tauri/binaries/README.md
+*.log
