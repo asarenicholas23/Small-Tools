@@ -31,14 +31,20 @@ jobs:
       - name: Install Ghostscript sidecar
         shell: pwsh
         run: |
-          choco install ghostscript -y --no-progress
+          $ghostscriptVersion = "10071"
+          $downloadUrl = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs$ghostscriptVersion/gs$ghostscriptVersion" + "w64.exe"
+          $installer = "$env:RUNNER_TEMP\ghostscript.exe"
+          $extractDir = "$env:RUNNER_TEMP\ghostscript"
 
-          $ghostscript = Get-ChildItem "C:\Program Files\gs" -Recurse -Filter "gswin64c.exe" |
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $installer
+          7z x $installer "-o$extractDir" -y
+
+          $ghostscript = Get-ChildItem $extractDir -Recurse -Filter "gswin64c.exe" |
             Sort-Object FullName -Descending |
             Select-Object -First 1
 
           if (!$ghostscript) {
-            Write-Error "Could not find gswin64c.exe after installing Ghostscript."
+            Write-Error "Could not find gswin64c.exe after extracting Ghostscript."
           }
 
           $sidecar = "src-tauri/binaries/pdf-shrinker-ghostscript-x86_64-pc-windows-msvc.exe"

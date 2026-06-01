@@ -6,9 +6,9 @@ Build the Windows installer on Windows or with the GitHub Actions workflow in
 ## GitHub Actions Build
 
 Push the project to GitHub, then run the `Build Windows Installer` workflow from
-the Actions tab. The workflow installs Ghostscript with Chocolatey, copies
-`gswin64c.exe` to the expected Tauri sidecar filename, builds the installer, and
-uploads the generated `.exe` and `.msi` files as artifacts.
+the Actions tab. The workflow downloads the official Artifex Windows Ghostscript
+installer, extracts `gswin64c.exe` to the expected Tauri sidecar filename, builds
+the installer, and uploads the generated `.exe` file as an artifact.
 
 ## Local Windows Build
 
