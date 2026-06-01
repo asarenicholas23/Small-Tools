@@ -3,6 +3,8 @@ name: Build Windows Installer
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
       - "v*"
 
@@ -26,13 +28,23 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Verify Ghostscript sidecar
+      - name: Install Ghostscript sidecar
         shell: pwsh
         run: |
-          $sidecar = "src-tauri/binaries/pdf-shrinker-ghostscript-x86_64-pc-windows-msvc.exe"
-          if (!(Test-Path $sidecar)) {
-            Write-Error "Missing Windows Ghostscript sidecar: $sidecar"
+          choco install ghostscript -y --no-progress
+
+          $ghostscript = Get-ChildItem "C:\Program Files\gs" -Recurse -Filter "gswin64c.exe" |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1
+
+          if (!$ghostscript) {
+            Write-Error "Could not find gswin64c.exe after installing Ghostscript."
           }
+
+          $sidecar = "src-tauri/binaries/pdf-shrinker-ghostscript-x86_64-pc-windows-msvc.exe"
+          New-Item -ItemType Directory -Force -Path "src-tauri/binaries" | Out-Null
+          Copy-Item $ghostscript.FullName $sidecar -Force
+          Write-Host "Prepared Windows Ghostscript sidecar at $sidecar"
 
       - name: Build Windows installer
         run: npm run tauri build

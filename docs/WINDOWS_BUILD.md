@@ -3,9 +3,16 @@
 Build the Windows installer on Windows or with the GitHub Actions workflow in
 `.github/workflows/build-windows.yml`.
 
-## Required Sidecar
+## GitHub Actions Build
 
-Add the Windows Ghostscript command-line binary here:
+Push the project to GitHub, then run the `Build Windows Installer` workflow from
+the Actions tab. The workflow installs Ghostscript with Chocolatey, copies
+`gswin64c.exe` to the expected Tauri sidecar filename, builds the installer, and
+uploads the generated `.exe` and `.msi` files as artifacts.
+
+## Local Windows Build
+
+For a local Windows build, add the Windows Ghostscript command-line binary here:
 
 ```text
 src-tauri/binaries/pdf-shrinker-ghostscript-x86_64-pc-windows-msvc.exe
@@ -14,9 +21,7 @@ src-tauri/binaries/pdf-shrinker-ghostscript-x86_64-pc-windows-msvc.exe
 This should be the Ghostscript console executable, usually `gswin64c.exe`,
 renamed to the Tauri sidecar filename above.
 
-## Local Windows Build
-
-On a Windows machine:
+Then run:
 
 ```powershell
 npm ci --legacy-peer-deps
@@ -29,13 +34,6 @@ The installer output will be under:
 src-tauri/target/release/bundle/nsis/
 src-tauri/target/release/bundle/msi/
 ```
-
-## GitHub Actions Build
-
-Push the project to GitHub with the Windows sidecar included, then run the
-`Build Windows Installer` workflow manually from the Actions tab.
-
-The workflow uploads the generated `.exe` and `.msi` files as artifacts.
 
 ## Licensing
 
