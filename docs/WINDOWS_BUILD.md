@@ -8,7 +8,9 @@ Build the Windows installer on Windows or with the GitHub Actions workflow in
 Push the project to GitHub, then run the `Build Windows Installer` workflow from
 the Actions tab. The workflow downloads the official Artifex Windows Ghostscript
 installer, extracts `gswin64c.exe` to the expected Tauri sidecar filename, builds
-the installer, and uploads the generated `.exe` file as an artifact.
+the installer on `windows-2022`, and uploads the generated `.exe` file as an
+artifact. If packaging fails, it also uploads a `pdf-shrinker-windows-build-log`
+artifact with the full Tauri output.
 
 ## Local Windows Build
 
