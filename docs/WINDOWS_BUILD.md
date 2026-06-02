@@ -38,8 +38,11 @@ src-tauri/ghostscript/
 Then run:
 
 ```powershell
-$env:TAURI_CONFIG = '{"bundle":{"resources":{"ghostscript/":"ghostscript/"}}}'
 npm ci --legacy-peer-deps
+$configPath = "src-tauri/tauri.conf.json"
+$config = Get-Content $configPath -Raw | ConvertFrom-Json
+$config.bundle | Add-Member -NotePropertyName resources -NotePropertyValue @("ghostscript") -Force
+$config | ConvertTo-Json -Depth 20 | Set-Content $configPath
 npm run tauri build -- --bundles nsis
 ```
 

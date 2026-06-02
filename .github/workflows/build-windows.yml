@@ -60,13 +60,22 @@ jobs:
           }
           Write-Host "Prepared Windows Ghostscript sidecar at $sidecar"
           Write-Host "Prepared Windows Ghostscript runtime at $runtime"
+          Get-ChildItem $runtime -Recurse | Select-Object -First 40 | Format-Table FullName
+
+      - name: Add Windows Ghostscript runtime to Tauri bundle
+        shell: pwsh
+        run: |
+          $configPath = "src-tauri/tauri.conf.json"
+          $config = Get-Content $configPath -Raw | ConvertFrom-Json
+          $config.bundle | Add-Member -NotePropertyName resources -NotePropertyValue @("ghostscript") -Force
+          $config | ConvertTo-Json -Depth 20 | Set-Content $configPath
+          Get-Content $configPath
 
       - name: Build Windows installer
         id: build
         shell: pwsh
         run: |
           $log = "$env:RUNNER_TEMP\windows-build.log"
-          $env:TAURI_CONFIG = '{"bundle":{"resources":{"ghostscript/":"ghostscript/"}}}'
           cmd /c "npm run tauri build -- --bundles nsis" 2>&1 | Tee-Object -FilePath $log
           $code = $LASTEXITCODE
           "exit_code=$code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
