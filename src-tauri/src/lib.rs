@@ -1,6 +1,8 @@
 use serde::Serialize;
 use std::fs;
 use std::path::Path;
+#[cfg(target_os = "windows")]
+use tauri::Manager;
 use tauri_plugin_shell::ShellExt;
 
 const VALID_QUALITIES: [&str; 4] = ["screen", "ebook", "printer", "prepress"];
@@ -115,15 +117,48 @@ async fn compress_pdf(
         input_path,
     ];
 
-    let sidecar = app.shell().sidecar("pdf-shrinker-ghostscript").map_err(|error| {
-        format!(
-            "The bundled Ghostscript binary is missing or could not be resolved: {error}"
-        )
-    })?;
+    #[cfg(target_os = "windows")]
+    let output_result = {
+        let resource_dir = app
+            .path()
+            .resource_dir()
+            .map_err(|error| format!("Could not locate the app resources folder: {error}"))?;
+        let ghostscript_dir = resource_dir.join("ghostscript");
+        let ghostscript_bin = ghostscript_dir.join("bin").join("gswin64c.exe");
 
-    let output_result = sidecar.args(args).output().await.map_err(|error| {
-        format!("Ghostscript could not be started. Check that the bundled binary is present and executable. Details: {error}")
-    })?;
+        if !ghostscript_bin.exists() {
+            return Err(format!(
+                "The bundled Ghostscript runtime is missing. Expected to find {}.",
+                ghostscript_bin.display()
+            ));
+        }
+
+        std::process::Command::new(&ghostscript_bin)
+            .args(&args)
+            .env("GS_LIB", ghostscript_dir.join("lib"))
+            .output()
+            .map_err(|error| {
+                format!(
+                    "Ghostscript could not be started. Check that the bundled runtime is present. Details: {error}"
+                )
+            })?
+    };
+
+    #[cfg(not(target_os = "windows"))]
+    let output_result = {
+        let sidecar = app
+            .shell()
+            .sidecar("pdf-shrinker-ghostscript")
+            .map_err(|error| {
+                format!(
+                    "The bundled Ghostscript binary is missing or could not be resolved: {error}"
+                )
+            })?;
+
+        sidecar.args(args).output().await.map_err(|error| {
+            format!("Ghostscript could not be started. Check that the bundled binary is present and executable. Details: {error}")
+        })?
+    };
 
     if !output_result.status.success() {
         let stderr = String::from_utf8_lossy(&output_result.stderr);
@@ -136,7 +171,14 @@ async fn compress_pdf(
         } else if !fallback.is_empty() {
             format!("Ghostscript could not compress this PDF. {fallback}")
         } else {
-            "Ghostscript could not compress this PDF. The file may be encrypted, damaged, or unsupported.".into()
+            let code = output_result
+                .status
+                .code()
+                .map(|status| status.to_string())
+                .unwrap_or_else(|| "unknown".to_string());
+            format!(
+                "Ghostscript could not compress this PDF. It exited with status {code} and did not return more details."
+            )
         });
     }
 

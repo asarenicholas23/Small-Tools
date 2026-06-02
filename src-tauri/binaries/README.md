@@ -25,3 +25,8 @@ On Linux and macOS, make sure the copied sidecar files are executable:
 ```bash
 chmod +x src-tauri/binaries/pdf-shrinker-ghostscript-*
 ```
+
+Windows builds also need the extracted Ghostscript runtime folder at
+`src-tauri/ghostscript`. The installer must include at least `bin/gswin64c.exe`,
+`bin/gsdll64.dll`, and the Ghostscript `lib` folder. The GitHub Actions Windows
+workflow prepares this folder automatically.

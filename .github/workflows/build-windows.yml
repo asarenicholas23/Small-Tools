@@ -47,16 +47,26 @@ jobs:
             Write-Error "Could not find gswin64c.exe after extracting Ghostscript."
           }
 
+          $ghostscriptRoot = Split-Path (Split-Path $ghostscript.FullName -Parent) -Parent
           $sidecar = "src-tauri/binaries/pdf-shrinker-ghostscript-x86_64-pc-windows-msvc.exe"
+          $runtime = "src-tauri/ghostscript"
           New-Item -ItemType Directory -Force -Path "src-tauri/binaries" | Out-Null
+          New-Item -ItemType Directory -Force -Path $runtime | Out-Null
           Copy-Item $ghostscript.FullName $sidecar -Force
+          Copy-Item "$ghostscriptRoot\bin" $runtime -Recurse -Force
+          Copy-Item "$ghostscriptRoot\lib" $runtime -Recurse -Force
+          if (Test-Path "$ghostscriptRoot\Resource") {
+            Copy-Item "$ghostscriptRoot\Resource" $runtime -Recurse -Force
+          }
           Write-Host "Prepared Windows Ghostscript sidecar at $sidecar"
+          Write-Host "Prepared Windows Ghostscript runtime at $runtime"
 
       - name: Build Windows installer
         id: build
         shell: pwsh
         run: |
           $log = "$env:RUNNER_TEMP\windows-build.log"
+          $env:TAURI_CONFIG = '{"bundle":{"resources":{"ghostscript/":"ghostscript/"}}}'
           cmd /c "npm run tauri build -- --bundles nsis" 2>&1 | Tee-Object -FilePath $log
           $code = $LASTEXITCODE
           "exit_code=$code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
